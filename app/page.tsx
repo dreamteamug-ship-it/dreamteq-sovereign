@@ -1,12 +1,185 @@
 "use client";
-
-import React from 'react';
-
-export default function SovereignGateway() {
+export default function Page() {
   return (
-    <main style={{ backgroundColor: '#000', minHeight: '100vh', color: '#fff' }}>
-      <div dangerouslySetInnerHTML={{ __html: `
-        ` }} />
-    </main>
+    <div dangerouslySetInnerHTML={{ __html: \
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DreamTeQ Sovereign | Final Operational Engine</title>
+    <style>
+        :root { --titanium: #e5e4e2; --obsidian: #0d0d0d; --gold: #d4af37; --emerald: #00ff88; }
+        
+        body { background: #0a0a0a; color: var(--titanium); font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        #sidebar { width: 220px; background: #000; border-right: 1px solid #222; padding: 25px; display: flex; flex-direction: column; gap: 10px; }
+        .brand { color: var(--gold); font-weight: 900; letter-spacing: 2px; margin-bottom: 30px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; text-transform: uppercase; font-size: 1.1rem; }
+        
+        .nav-item { background: transparent; border: 1px solid #333; color: white; padding: 12px; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; font-weight: bold; border-radius: 2px; transition: 0.3s; }
+        .nav-item:hover { border-color: var(--gold); color: var(--gold); }
+
+        #workspace { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; background: radial-gradient(circle at top, #1a1a1a, #0a0a0a); padding-bottom: 50px; }
+        
+        .executive-header { 
+            width: 100%; 
+            background: rgba(0,0,0,0.95); 
+            backdrop-filter: blur(10px); 
+            padding: 15px 40px; 
+            display: flex; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            border-bottom: 1px solid #333;
+            box-sizing: border-box;
+        }
+
+        .action-btn { padding: 8px 16px; font-weight: bold; cursor: pointer; border: none; border-radius: 2px; text-transform: uppercase; font-size: 0.7rem; margin-left: 8px; transition: 0.2s; }
+        .btn-gold { background: var(--gold); color: black; }
+        .btn-emerald { background: var(--emerald); color: black; }
+        .btn-outline { background: transparent; color: white; border: 1px solid #444; }
+
+        #a4-landscape {
+            width: 297mm; 
+            height: 210mm; 
+            background: white; 
+            color: black; 
+            padding: 15mm; 
+            margin-top: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8); 
+            box-sizing: border-box; 
+            position: relative;
+            overflow: hidden; 
+        }
+
+        .edit-area { outline: none; border: 1px dashed transparent; padding: 5px; }
+        .edit-area:hover { border: 1px dashed var(--gold); }
+
+        #image-zone { 
+            width: 100%; 
+            height: 420px; 
+            background: #000; 
+            border: 1px solid #eee; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 15px 0; 
+            cursor: pointer; 
+            overflow: hidden; 
+        }
+
+        #uploaded-img { width: 100%; height: 100%; object-fit: cover; image-rendering: -webkit-optimize-contrast; display: none; }
+
+        #summary-block {
+            width: 297mm;
+            background: #111;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-top: 30px;
+            color: #888;
+            font-family: monospace;
+            font-size: 0.75rem;
+            box-sizing: border-box;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #a4-landscape, #a4-landscape * { visibility: visible; }
+            #a4-landscape { position: absolute; left: 0; top: 0; box-shadow: none; border: none; padding: 0; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <div class="brand">DreamTeQ</div>
+    <button class="nav-item" onclick="loadDoc('short')">Board Summary</button>
+    <button class="nav-item" onclick="loadDoc('long')">Technical Audit</button>
+</div>
+
+<div id="workspace">
+    <div class="executive-header">
+        <span style="color:var(--emerald); font-weight: bold; font-size: 0.8rem;">● SOVEREIGN OUTPUT ENGINE</span>
+        <div style="margin-left: auto;">
+            <button class="action-btn btn-outline" onclick="window.print()">Print to PDF</button>
+            <button class="action-btn btn-emerald" onclick="saveToPdf()">Save to PDF</button>
+            <button class="action-btn btn-gold" onclick="permanentSave()">Archive HTML</button>
+        </div>
+    </div>
+
+    <div id="a4-landscape">
+        <h1 contenteditable="true" id="doc-title" class="edit-area">SOVEREIGN REPORT</h1>
+        <hr style="border: 0; border-top: 1px solid #eee;">
+        
+        <div id="image-zone" onclick="document.getElementById('ai-upload').click()">
+            <span id="upload-hint" style="color:var(--gold); font-size: 0.7rem; font-weight: bold;">CLICK TO DEPLOY 8K ASSET</span>
+            <img id="uploaded-img">
+        </div>
+        <input type="file" id="ai-upload" style="display:none" onchange="processUpload(this)" accept="image/*">
+
+        <div contenteditable="true" id="doc-body" class="edit-area" style="font-size: 1rem; line-height: 1.5;">
+            Input technical data or select a sidebar module.
+        </div>
+    </div>
+
+    <div id="summary-block">
+        <strong style="color: var(--gold);">PROJECT SUMMARY FOR CONTINUITY:</strong><br><br>
+        <div id="summary-content">
+            PROJECT: DreamTeQ Sovereign | ORIENTATION: A4 Landscape | HARDENING: 8K HD Fill Enabled | 
+            SYSTEM: Titanium_Gateway_v3 | LAST_EXPORT: <span id="timestamp">---</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "http://127.0.0.1:8000";
+
+    async function processUpload(input) {
+        if (!input.files || !input.files[0]) return;
+        const hint = document.getElementById('upload-hint');
+        hint.innerText = "UPLOADING...";
+        const formData = new FormData();
+        formData.append("file", input.files[0]);
+        try {
+            const res = await fetch(`${API}/upload-ai-image`, { method: "POST", body: formData });
+            const data = await res.json();
+            const img = document.getElementById('uploaded-img');
+            img.src = data.url;
+            img.style.display = "block";
+            hint.style.display = "none";
+        } catch (err) { hint.innerText = "API ERROR"; }
+    }
+
+    async function loadDoc(type) {
+        const res = await fetch(`${API}/generate-doc-content`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ content_type: type, project_id: "DreamTeQ_Root" })
+        });
+        const data = await res.json();
+        document.getElementById('doc-title').innerText = data.title;
+        document.getElementById('doc-body').innerText = data.body;
+        document.getElementById('timestamp').innerText = new Date().toLocaleString();
+    }
+
+    function saveToPdf() {
+        const originalTitle = document.title;
+        document.title = `SOVEREIGN_PDF_${new Date().getTime()}`;
+        window.print();
+        document.title = originalTitle;
+    }
+
+    function permanentSave() {
+        const content = document.getElementById('a4-landscape').innerHTML;
+        const blob = new Blob([`<html><body style="padding:40px; background:#0a0a0a; display:flex; justify-content:center; flex-direction:column; align-items:center;"><div style="background:white; padding:15mm; width:297mm; height:210mm; box-sizing:border-box; overflow:hidden;">${content}</div><style>img { width:100%; height:420px; object-fit:cover; display:block; margin: 15px 0; }</style></body></html>`], {type: 'text/html'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `DTQ_ARCHIVE_${Date.now()}.html`;
+        link.click();
+    }
+</script>
+</body>
+</html>
+\ }} />
   );
 }
