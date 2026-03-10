@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+  <title>DreamTEQ 360 · 8K Farmer ERP · Dashboard</title>
+  <!-- Fonts: Montserrat (titles) & Lato (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- QR & barcode libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <!-- html2canvas & jspdf for PDF download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #dbcfb2; /* soft parchment */
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      font-family: 'Lato', sans-serif;
+    }
+    .portal { max-width: 2000px; width: 100%; }
+
+    /* 8K refined header */
+    .header {
+      background: #1b3722; padding: 24px 32px; border-radius: 60px; margin-bottom: 30px;
+      border: 2px solid #e9c572; display: flex; flex-wrap: wrap; justify-content: space-between;
+      align-items: center; color: #fbeecc; box-shadow: 0 12px 28px #1f3f1f;
+    }
+    .company { background: #1f351f; padding: 12px 28px; border-radius: 50px; border: 1px solid #d6aa4b; }
+
+    /* 4K gold (no emboss) */
+    .gold-4k {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 2.8rem;
+      background: linear-gradient(135deg, #fbe28c, #f0c45a, #dba73e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 1px;
+    }
+
+    /* dashboard grid: left cards + right panel */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 25px;
+    }
+    @media (max-width: 1000px) { .dash-grid { grid-template-columns: 1fr; } }
+
+    /* left container for two cards */
+    .cards-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 25px;
+      justify-content: center;
+    }
+
+    /* portrait card base */
+    .id-card-portrait {
+      width: 380px;
+      background: #fefcf0;
+      border-radius: 60px;
+      padding: 24px 20px;
+      border: 2px solid #cfaa62;
+      box-shadow: 0 25px 40px -12px #1f3f1f;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title-mont {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.9rem;
+      color: #2f3a1f;
+      border-bottom: 3px double #b3883b;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* maroon & silver theme */
+    .maroon-inner {
+      background: linear-gradient(145deg, #732727, #451e1e);
+      border-radius: 48px;
+      padding: 24px 18px;
+      border: 3px solid #cf9f4a;
+      color: #f5dfb3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: inset 0 0 0 2px #c0c0c0; /* silver accent */
+    }
+    /* deep dark green & gold theme */
+    .green-inner {
+      background: linear-gradient(145deg, #124d24, #1f6d2b);
+      border-radius: 48px;
+      padding: 24px 18px;
+      border: 4px solid #edbc4b;
+      color: #fff2c9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 0 0 2px #f7cf7a; /* gold glow */
+    }
+
+    /* image row inside card: left logo, right farmer */
+    .card-image-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 18px;
+      gap: 10px;
+    }
+    .image-placeholder {
+      width: 100px;
+      height: 100px;
+      background: #bba47c;
+      border-radius: 30px;
+      border: 3px solid #d1a14b;
+      box-shadow: inset 0 0 0 2px #eee5d2;
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .image-placeholder:hover { opacity: 0.8; border-color: gold; }
+    .image-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+    .left-logo .image-placeholder { background: #7f6e48; }
+    .right-farmer .image-placeholder { background: #8d7b51; }
+
+    /* barcode / qr row */
+    .barcode-fit svg { max-width: 220px; background: white; border-radius: 24px; padding: 8px; width: 100%; }
+    .qr-fit canvas { background: white; border-radius: 24px; padding: 6px; width: 120px; height: 120px; }
+
+    /* data grid small */
+    .data-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      font-size: 0.8rem;
+      margin: 15px 0 8px;
+    }
+
+    /* right panel – farmer dashboard */
+    .right-panel {
+      background: #f9f2de;
+      border-radius: 60px;
+      padding: 28px 22px;
+      border: 3px solid #cbaa58;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .section-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.6rem;
+      color: #2e4527;
+      border-left: 8px solid #e4b441;
+      padding-left: 16px;
+    }
+
+    .wallet-row {
+      display: flex;
+      gap: 15px;
+      justify-content: space-between;
+    }
+    .wallet-item {
+      background: #214d2b; padding: 16px; border-radius: 40px; color: #ffefc0; flex: 1;
+      border: 2px solid #c8a34b;
+    }
+
+    .feature-btn {
+      background: #2e592f; color: #fffad4; border: none; padding: 12px 18px;
+      border-radius: 50px; font-weight: 600; cursor: pointer; border: 1px solid #e9b65e;
+      display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .feature-btn:hover { background: #3f7840; }
+
+    .module-grid {
+      display: grid; grid-template-columns: repeat(2,1fr); gap: 12px;
+    }
+    .module-item {
+      background: #3c653b; padding: 15px; border-radius: 40px; color: #fcf0c0;
+      text-align: center; border: 1px solid #e9bc5d; font-size: 0.9rem;
+    }
+
+    /* action buttons row */
+    .action-btns {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; justify-content: center;
+    }
+    .small-btn {
+      background: #64583a; color: #ffeec2; border: none; padding: 8px 12px; border-radius: 40px;
+      font-weight: 600; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    }
+
+    .footer { text-align: center; margin-top: 40px; color: #5a4e2e; }
+  </style>
+</head>
+<body>
+<div class="portal">
+
+  <!-- Header -->
+  <div class="header">
+    <span class="gold-4k">DreamTEQ 360 Farmer ERP</span>
+    <div class="company"><i class="fas fa-map-pin"></i> Box 3515 Nairobi · dtc@dreamteamconsult.net</div>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="dash-grid">
+    <!-- LEFT: two portrait cards -->
+    <div class="cards-row">
+      <!-- REGISTRATION CARD (maroon + silver) -->
+      <div class="id-card-portrait" id="regCardPortrait">
+        <div class="card-title-mont"><i class="fas fa-id-card"></i> REGISTRATION</div>
+        <div class="maroon-inner" id="maroonInnerCard">
+          <!-- image row: left logo, right farmer (click to upload) -->
+          <div class="card-image-row">
+            <div class="left-logo">
+              <div class="image-placeholder" id="regLogoPlaceholder" title="click to upload logo">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23927b47'/%3E%3Ctext x='18' y='58' fill='%23eedbaa' font-size='14'%3Elogo%3C/text%3E%3C/svg%3E" id="regLogoImg">
+              </div>
+            </div>
+            <div class="right-farmer">
+              <div class="image-placeholder" id="regFarmerPlaceholder" title="click to upload farmer photo">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23927b47'/%3E%3Ctext x='18' y='58' fill='%23eedbaa' font-size='14'%3Ephoto%3C/text%3E%3C/svg%3E" id="regFarmerImg">
+              </div>
+            </div>
+          </div>
+          <!-- barcode -->
+          <div class="barcode-fit"><svg id="barcodeReg"></svg></div>
+          <!-- minimal data grid -->
+          <div class="data-grid">
+            <span><i class="fas fa-user"></i> <span id="regName">James Mwangi</span></span>
+            <span><i class="fas fa-venus-mars"></i> <span id="regGender">Male</span> / <span id="regAge">42</span></span>
+            <span><i class="fas fa-phone"></i> <span id="regContact">+254723456</span></span>
+            <span><i class="fas fa-map-pin"></i> <span id="regVillage">Kagio</span>, <span id="regDistrict">Kirinyaga</span></span>
+            <span><i class="fas fa-id-card"></i> ID <span id="regID">32984012</span></span>
+            <span><i class="fas fa-calendar"></i> 2025-03-01</span>
+          </div>
+          <div>signature: <span id="regSignature">________</span></div>
+        </div>
+        <!-- edit row below card -->
+        <div style="display: flex; flex-wrap: wrap; gap: 5px; margin: 15px 0 8px;">
+          <input class="small-input" id="editName" value="James Mwangi" style="width:110px;" placeholder="Name">
+          <input class="small-input" id="editAge" value="42" style="width:50px;">
+          <select id="editGender" style="width:75px;"><option>Male</option><option>Female</option></select>
+          <input class="small-input" id="editContact" value="+254723456" style="width:100px;">
+          <input class="small-input" id="editVillage" value="Kagio" style="width:80px;">
+          <input class="small-input" id="editDistrict" value="Kirinyaga" style="width:90px;">
+          <input class="small-input" id="editID" value="32984012" style="width:90px;">
+        </div>
+        <div class="action-btns">
+          <button class="small-btn" id="updateRegBtn"><i class="fas fa-save"></i> save edit</button>
+          <button class="small-btn" id="permSaveReg"><i class="fas fa-database"></i> permanent</button>
+          <button class="small-btn" id="pdfRegBtn"><i class="fas fa-file-pdf"></i> PDF</button>
+          <button class="small-btn" id="printRegBtn"><i class="fas fa-print"></i> print card</button>
+        </div>
+      </div>
+
+      <!-- ONBOARDING CARD (deep green + gold) -->
+      <div class="id-card-portrait" id="onboardCardPortrait">
+        <div class="card-title-mont"><i class="fas fa-seedling"></i> ONBOARDING</div>
+        <div class="green-inner" id="greenInnerCard">
+          <!-- image row: left logo, right farmer -->
+          <div class="card-image-row">
+            <div class="left-logo">
+              <div class="image-placeholder" id="onLogoPlaceholder" title="click to upload logo">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23927b47'/%3E%3Ctext x='18' y='58' fill='%23eedbaa' font-size='14'%3Elogo%3C/text%3E%3C/svg%3E" id="onLogoImg">
+              </div>
+            </div>
+            <div class="right-farmer">
+              <div class="image-placeholder" id="onFarmerPlaceholder" title="click to upload farmer photo">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23927b47'/%3E%3Ctext x='18' y='58' fill='%23eedbaa' font-size='14'%3Ephoto%3C/text%3E%3C/svg%3E" id="onFarmerImg">
+              </div>
+            </div>
+          </div>
+          <!-- QR code -->
+          <canvas id="qrOnboard" width="120" height="120" style="background:white; border-radius:24px; padding:5px; margin-bottom:8px;"></canvas>
+          <!-- minimal visible data: season, chain, SaaS, date -->
+          <div class="data-grid" style="grid-template-columns:1fr 1fr;">
+            <span><i class="fas fa-calendar"></i> <span id="onDate">2025-03-01</span></span>
+            <span><i class="fas fa-seedling"></i> <span id="onSeason">long rains</span></span>
+            <span><i class="fas fa-tags"></i> <span id="onChain">Soyabean</span></span>
+            <span><i class="fas fa-check-circle"></i> SaaS <span id="onSaaS">paid</span></span>
+          </div>
+          <div style="margin-top:6px; font-size:0.7rem;">scan QR for full bio & deeper data</div>
+        </div>
+        <!-- edit onboard fields -->
+        <div style="display:flex; gap:5px; flex-wrap:wrap; margin:15px 0 8px;">
+          <input class="small-input" id="editSeason" value="long rains" style="width:100px;">
+          <input class="small-input" id="editChain" value="Soyabean" style="width:100px;">
+          <select id="editSaaSStatus" style="width:80px;"><option value="paid">paid</option><option value="not paid">not paid</option></select>
+        </div>
+        <div class="action-btns">
+          <button class="small-btn" id="updateOnBtn"><i class="fas fa-save"></i> save edit</button>
+          <button class="small-btn" id="permSaveOn"><i class="fas fa-database"></i> permanent</button>
+          <button class="small-btn" id="pdfOnBtn"><i class="fas fa-file-pdf"></i> PDF</button>
+          <button class="small-btn" id="printOnBtn"><i class="fas fa-print"></i> print card</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Farmer Dashboard Portal -->
+    <div class="right-panel">
+      <span class="gold-4k" style="font-size:2rem;">📊 DASHBOARD</span>
+
+      <!-- Season & Valuechain selection -->
+      <div style="background:#2a532b; border-radius:40px; padding:16px; color:#fff3c9;">
+        <div style="display:flex; gap:15px; align-items:center;">
+          <i class="fas fa-calendar-alt fa-2x"></i>
+          <select id="seasonSelectDash" class="small-input" style="width:130px;">
+            <option>long rains 2025</option><option>short rains 2025</option><option>dry 2025</option>
+          </select>
+          <select id="chainSelectDash" class="small-input" style="width:150px;">
+            <option>Soyabean</option><option>Sunflower</option><option>White Maize</option><option>Yellow Maize</option><option>Chillie</option><option>Fruit Trees</option><option>Shangie Irish</option><option>Marques Irish</option><option>Israel Giant Pumpkin</option><option>Yellow Beans</option><option>Onions</option><option>Ghalic</option><option>Melons</option><option>Local Chicken</option><option>Kitchen Garden Veg</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Wallets -->
+      <div class="wallet-row">
+        <div class="wallet-item"><i class="fas fa-lock"></i> Restricted<br> <span id="restrictWallet">$246.00</span></div>
+        <div class="wallet-item"><i class="fas fa-piggy-bank"></i> Savings<br> <span id="savingsWallet">$112.50</span></div>
+      </div>
+
+      <!-- Agri-shop inputs & modules -->
+      <div class="section-title"><i class="fas fa-store"></i> Agri-shop inputs</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="feature-btn"><i class="fas fa-seedling"></i> fertilizer</span>
+        <span class="feature-btn"><i class="fas fa-tractor"></i> tools</span>
+        <span class="feature-btn"><i class="fas fa-flask"></i> chemicals</span>
+      </div>
+
+      <!-- Valuechain training modules -->
+      <div class="section-title"><i class="fas fa-chalkboard-teacher"></i> Training modules</div>
+      <div class="module-grid">
+        <div class="module-item"><i class="fas fa-leaf"></i> Soyabean</div>
+        <div class="module-item"><i class="fas fa-seedling"></i> Maize</div>
+        <div class="module-item"><i class="fas fa-tree"></i> Fruit Trees</div>
+        <div class="module-item"><i class="fas fa-egg"></i> Local Chicken</div>
+      </div>
+
+      <!-- Business plan & Credit scoring Q&A -->
+      <div class="section-title"><i class="fas fa-file-signature"></i> Business plan & Credit Q&A</div>
+      <div style="background:#346634; border-radius:40px; padding:16px; color:#fcf0bb;">
+        <p><i class="fas fa-question-circle"></i> Loan scoring questions: collateral? savings? </p>
+        <progress value="70" max="100" style="width:100%; height:15px; border-radius:20px;"></progress>
+        <p>Credit score: <strong>720</strong> (good)</p>
+      </div>
+
+      <!-- permanent save indicator -->
+      <div style="text-align:center; color:#5e5a34;">✅ auto-saved to local storage</div>
+    </div>
+  </div>
+
+  <div class="footer">Dreamteam Consulting · 8K ID cards · click images to upload · all actions responsive</div>
+</div>
+
+<!-- hidden file inputs -->
+<input type="file" id="logoUploadReg" accept="image/*" style="display:none;">
+<input type="file" id="farmerUploadReg" accept="image/*" style="display:none;">
+<input type="file" id="logoUploadOn" accept="image/*" style="display:none;">
+<input type="file" id="farmerUploadOn" accept="image/*" style="display:none;">
+
+<script>
+  (function() {
+    // farmer state
+    let farmer = {
+      name: "James Mwangi", age: "42", gender: "Male", contact: "+254723456",
+      village: "Kagio", district: "Kirinyaga", idNo: "32984012",
+      season: "long rains", chain: "Soyabean", saasStatus: "paid",
+      logoReg: null, farmerPhoto: null, logoOn: null, // separate logos? we sync both for simplicity
+      wallets: { restricted: 246.00, savings: 112.50 }
+    };
+
+    // DOM elements
+    const regLogoImg = document.getElementById('regLogoImg');
+    const regFarmerImg = document.getElementById('regFarmerImg');
+    const onLogoImg = document.getElementById('onLogoImg');
+    const onFarmerImg = document.getElementById('onFarmerImg');
+
+    const regName = document.getElementById('regName');
+    const regGender = document.getElementById('regGender');
+    const regAge = document.getElementById('regAge');
+    const regContact = document.getElementById('regContact');
+    const regVillage = document.getElementById('regVillage');
+    const regDistrict = document.getElementById('regDistrict');
+    const regID = document.getElementById('regID');
+
+    const onDate = document.getElementById('onDate');
+    const onSeason = document.getElementById('onSeason');
+    const onChain = document.getElementById('onChain');
+    const onSaaS = document.getElementById('onSaaS');
+    const qrCanvas = document.getElementById('qrOnboard');
+
+    // dashboard elements
+    const restrictWallet = document.getElementById('restrictWallet');
+    const savingsWallet = document.getElementById('savingsWallet');
+    const seasonSelect = document.getElementById('seasonSelectDash');
+    const chainSelect = document.getElementById('chainSelectDash');
+
+    // edit fields
+    const editName = document.getElementById('editName');
+    const editAge = document.getElementById('editAge');
+    const editGender = document.getElementById('editGender');
+    const editContact = document.getElementById('editContact');
+    const editVillage = document.getElementById('editVillage');
+    const editDistrict = document.getElementById('editDistrict');
+    const editID = document.getElementById('editID');
+    const editSeason = document.getElementById('editSeason');
+    const editChain = document.getElementById('editChain');
+    const editSaaSStatus = document.getElementById('editSaaSStatus');
+
+    // image click triggers: registration
+    document.getElementById('regLogoPlaceholder').addEventListener('click', ()=> document.getElementById('logoUploadReg').click());
+    document.getElementById('regFarmerPlaceholder').addEventListener('click', ()=> document.getElementById('farmerUploadReg').click());
+    document.getElementById('onLogoPlaceholder').addEventListener('click', ()=> document.getElementById('logoUploadOn').click());
+    document.getElementById('onFarmerPlaceholder').addEventListener('click', ()=> document.getElementById('farmerUploadOn').click());
+
+    // image upload handlers
+    document.getElementById('logoUploadReg').addEventListener('change', function(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader(); reader.onload = (ev) => { farmer.logoReg = ev.target.result; regLogoImg.src = ev.target.result; }; reader.readAsDataURL(file);
+    });
+    document.getElementById('farmerUploadReg').addEventListener('change', function(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader(); reader.onload = (ev) => { farmer.farmerPhoto = ev.target.result; regFarmerImg.src = ev.target.result; onFarmerImg.src = ev.target.result; }; reader.readAsDataURL(file);
+    });
+    document.getElementById('logoUploadOn').addEventListener('change', function(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader(); reader.onload = (ev) => { farmer.logoOn = ev.target.result; onLogoImg.src = ev.target.result; }; reader.readAsDataURL(file);
+    });
+    document.getElementById('farmerUploadOn').addEventListener('change', function(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader(); reader.onload = (ev) => { farmer.farmerPhoto = ev.target.result; regFarmerImg.src = ev.target.result; onFarmerImg.src = ev.target.result; }; reader.readAsDataURL(file);
+    });
+
+    function refreshAll() {
+      // update reg texts
+      regName.innerText = farmer.name; regGender.innerText = farmer.gender; regAge.innerText = farmer.age;
+      regContact.innerText = farmer.contact; regVillage.innerText = farmer.village; regDistrict.innerText = farmer.district;
+      regID.innerText = farmer.idNo;
+      // barcode
+      try { JsBarcode("#barcodeReg", `FARM-${farmer.idNo}`, { width:2, height:40, fontSize:12, displayValue:true }); } catch(e){}
+
+      // onboard texts
+      onDate.innerText = new Date().toISOString().slice(0,10);
+      onSeason.innerText = farmer.season; onChain.innerText = farmer.chain; onSaaS.innerText = farmer.saasStatus;
+      // generate QR
+      const qrData = `DreamTEQ 360\nName:${farmer.name}\nID:${farmer.idNo}\nAge:${farmer.age}\n${farmer.village},${farmer.district}\nSeason:${farmer.season}\nChain:${farmer.chain}\nSaaS:${farmer.saasStatus}\nFull bio: group, acreage, loan, water, fence, education, insurance, mechanisation, soil test, trees, business plan, credit scoring.`;
+      QRCode.toCanvas(qrCanvas, qrData, { width:120 }, e=>{});
+
+      // dashboard wallets
+      restrictWallet.innerText = '$' + farmer.wallets.restricted.toFixed(2);
+      savingsWallet.innerText = '$' + farmer.wallets.savings.toFixed(2);
+
+      // sync selects
+      seasonSelect.value = farmer.season;
+      chainSelect.value = farmer.chain;
+    }
+
+    // update from edit fields
+    document.getElementById('updateRegBtn').addEventListener('click', ()=>{
+      farmer.name = editName.value; farmer.age = editAge.value; farmer.gender = editGender.value;
+      farmer.contact = editContact.value; farmer.village = editVillage.value; farmer.district = editDistrict.value;
+      farmer.idNo = editID.value; refreshAll(); saveToStorage();
+    });
+    document.getElementById('updateOnBtn').addEventListener('click', ()=>{
+      farmer.season = editSeason.value; farmer.chain = editChain.value; farmer.saasStatus = editSaaSStatus.value;
+      refreshAll(); saveToStorage();
+    });
+
+    // permanent save to localStorage
+    function saveToStorage() { localStorage.setItem('dreamteqFarmer8k', JSON.stringify(farmer)); }
+    function loadFromStorage() {
+      const saved = localStorage.getItem('dreamteqFarmer8k');
+      if (saved) { try { farmer = JSON.parse(saved); } catch(e){} }
+    }
+    loadFromStorage();
+
+    // PDF functions (simplified)
+    document.getElementById('pdfRegBtn').addEventListener('click', function() {
+      html2canvas(document.getElementById('maroonInnerCard')).then(canvas => {
+        const { jsPDF } = window.jspdf; const pdf = new jsPDF('p','mm',[100,150]);
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 5,5,90,120);
+        pdf.save('reg_card.pdf');
+      });
+    });
+    document.getElementById('pdfOnBtn').addEventListener('click', function() {
+      html2canvas(document.getElementById('greenInnerCard')).then(canvas => {
+        const { jsPDF } = window.jspdf; const pdf = new jsPDF('p','mm',[100,150]);
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 5,5,90,120);
+        pdf.save('onboard_card.pdf');
+      });
+    });
+    document.getElementById('printRegBtn').addEventListener('click', ()=> window.print());
+    document.getElementById('printOnBtn').addEventListener('click', ()=> window.print());
+
+    // perm save buttons
+    document.getElementById('permSaveReg').addEventListener('click', ()=>{ saveToStorage(); alert('Permanently saved'); });
+    document.getElementById('permSaveOn').addEventListener('click', ()=>{ saveToStorage(); alert('Saved'); });
+
+    // dashboard selections update
+    seasonSelect.addEventListener('change', (e)=>{ farmer.season = e.target.value; refreshAll(); saveToStorage(); });
+    chainSelect.addEventListener('change', (e)=>{ farmer.chain = e.target.value; refreshAll(); saveToStorage(); });
+
+    // initial
+    refreshAll();
+  })();
+</script>
+</body>
+</html>
