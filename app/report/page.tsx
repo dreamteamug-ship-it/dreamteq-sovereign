@@ -5,7 +5,7 @@ export default function InvestorReport() {
   return (
     <div className="bg-black text-white min-h-screen p-10 font-sans">
       <div className="max-w-4xl mx-auto border border-yellow-600/30 p-8 bg-zinc-900/50 rounded-lg">
-        <h1 className="text-3xl font-bold text-yellow-500 mb-6 uppercase tracking-tighter">Sovereign Project: M Settlement Landscape</h1>
+        <h1 className="text-3xl font-bold text-yellow-500 mb-6 uppercase tracking-tighter">Sovereign Project: $6.6M Settlement Landscape</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="p-4 border border-zinc-700 rounded bg-zinc-950">
             <p className="text-zinc-500 text-xs uppercase tracking-widest">Project Capitalization</p>
